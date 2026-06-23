@@ -1,0 +1,98 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Matrícula do Aluno (Finais: 47)
+matr = 47
+
+# Constantes Gerais de Materiais (Convertidas para kN e metros)
+E_alu = 69e6   # 69 GPa em kN/m²
+E_aco = 200e6  # 200 GPa em kN/m²
+
+# ---------------------------------------------------------
+# SEÇÃO 1: Viga com balanço
+# ---------------------------------------------------------
+w0_1 = matr + 20  # kN/m
+L_1 = 8.0         # m
+I_1 = 314e6 * 1e-12  # mm⁴ para m⁴
+
+EI_1_alu = E_alu * I_1
+EI_1_aco = E_aco * I_1
+x_1 = np.arange(0, 9, 1)
+
+def deflexao_1(x, w0, L, EI):
+    return (w0 * x) / (48 * EI) * (3 * L * x**2 - 2 * x**3 - L**3) * 1000
+
+y_1_alu = [deflexao_1(x, w0_1, L_1, EI_1_alu) for x in x_1]
+y_1_aco = [deflexao_1(x, w0_1, L_1, EI_1_aco) for x in x_1]
+
+# ---------------------------------------------------------
+# SEÇÃO 3: Viga biapoiada com carga central
+# ---------------------------------------------------------
+P_3 = matr + 30   # kN
+L_3 = 8.0         # m
+I_3 = 885.5 * 1e-8  # cm⁴ para m⁴
+
+EI_3_alu = E_alu * I_3
+EI_3_aco = E_aco * I_3
+x_3 = np.arange(0, 4.5, 0.5)
+
+def deflexao_3(x, P, L, EI):
+    return (P * x) / (48 * EI) * (4 * x**2 - 3 * L**2) * 1000
+
+def inclinacao_3(x, P, L, EI):
+    return (P / (16 * EI)) * (4 * x**2 - L**2)
+
+y_3_alu = [deflexao_3(x, P_3, L_3, EI_3_alu) for x in x_3]
+y_3_aco = [deflexao_3(x, P_3, L_3, EI_3_aco) for x in x_3]
+theta_3_alu = [inclinacao_3(x, P_3, L_3, EI_3_alu) for x in x_3]
+theta_3_aco = [inclinacao_3(x, P_3, L_3, EI_3_aco) for x in x_3]
+
+# ---------------------------------------------------------
+# SEÇÃO 4: Problema Resolvido 9.3
+# ---------------------------------------------------------
+w0_4 = matr + 10  # kN/m
+L_4 = 6.0         # m
+I_4 = 333e6 * 1e-12  # mm⁴ para m⁴
+
+EI_4_alu = E_alu * I_4
+EI_4_aco = E_aco * I_4
+x_4 = np.arange(0, 7, 1)
+
+def deflexao_4(x, w0, L, EI):
+    return (w0 / (120 * EI * L)) * (2 * L**2 * x**3 - x**5 - L**4 * x) * 1000
+
+def inclinacao_4(x, w0, L, EI):
+    return (w0 / (120 * EI * L)) * (6 * L**2 * x**2 - 5 * x**4 - L**4)
+
+y_4_alu = [deflexao_4(x, w0_4, L_4, EI_4_alu) for x in x_4]
+y_4_aco = [deflexao_4(x, w0_4, L_4, EI_4_aco) for x in x_4]
+theta_4_alu = [inclinacao_4(x, w0_4, L_4, EI_4_alu) for x in x_4]
+theta_4_aco = [inclinacao_4(x, w0_4, L_4, EI_4_aco) for x in x_4]
+
+# --- BLOCO DE PLOTAGEM DOS GRÁFICOS ---
+# Gráfico 1 - Seção 1 Deflexão
+plt.figure(figsize=(8, 4))
+plt.plot(x_1, y_1_alu, 'o-', label='Alumínio', color='blue')
+plt.plot(x_1, y_1_aco, 's-', label='Aço', color='orange')
+plt.title('Seção 1: Deflexão na parte AB da viga')
+plt.xlabel('Posição x (m)'); plt.ylabel('Deflexão y (mm)'); plt.grid(True); plt.legend()
+plt.tight_layout(); plt.savefig('secao1_deflexao.png', dpi=300)
+
+# Gráfico 2 - Seção 3 Deflexão
+plt.figure(figsize=(8, 4))
+plt.plot(x_3, y_3_alu, 'o-', label='Alumínio', color='blue')
+plt.plot(x_3, y_3_aco, 's-', label='Aço', color='orange')
+plt.title('Seção 3: Deflexão na parte AC da viga')
+plt.xlabel('Posição x (m)'); plt.ylabel('Deflexão y (mm)'); plt.grid(True); plt.legend()
+plt.tight_layout(); plt.savefig('secao3_deflexao.png', dpi=300)
+
+# Gráfico 3 - Seção 4 Deflexão
+plt.figure(figsize=(8, 4))
+plt.plot(x_4, y_4_alu, 'o-', label='Alumínio', color='blue')
+plt.plot(x_4, y_4_aco, 's-', label='Aço', color='orange')
+plt.title('Seção 4: Deflexão da viga AB (Problema 9.3)')
+plt.xlabel('Posição x (m)'); plt.ylabel('Deflexão y (mm)'); plt.grid(True); plt.legend()
+plt.tight_layout(); plt.savefig('secao4_deflexao.png', dpi=300)
+
+plt.show()
